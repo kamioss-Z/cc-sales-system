@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0054)file:///C:/Users/admin/Downloads/order-manager_18.html -->
+<!-- saved from url=(0054)file:///C:/Users/admin/Downloads/order-manager_19.html -->
 <html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -99,7 +99,7 @@ tr.hidden-row td{opacity:0.38;background:#fafaf9}
     </div>
   </div></div>
 <div id="lightbox" class="img-lightbox" style="display:none" onclick="closeLightbox()">
-  <img id="lb-img" src="file:///C:/Users/admin/Downloads/order-manager_18.html" alt="">
+  <img id="lb-img" src="file:///C:/Users/admin/Downloads/order-manager_19.html" alt="">
 </div>
 <div id="toast" class="toast"></div>
 
@@ -454,6 +454,8 @@ window.doLogin=async function(){
 function filteredOrders(){
   let list=orders.filter(o=>{
     if(!showHidden&&o.hidden)return false;
+    // 完了案件はデフォルト非表示（showCompletedでのみ表示）
+    if(o.status==="完了"&&!showCompleted)return false;
     if(filterStatus!=="全て"&&o.status!==filterStatus)return false;
     if(filterClients.size>0&&!filterClients.has(o.client||""))return false;
     if(filterAssignees.size>0&&!filterAssignees.has(o.assignee||""))return false;
@@ -962,12 +964,16 @@ function renderSummary(){
   ];
   // 完了一覧
   const completedList=showCompleted?renderCompletedList():"";
-  return`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${showCompleted?'8px':'14px'}">
-    ${cards.map(c=>`<div class="card" style="min-width:78px;border-left:3px solid ${c.col};${c.click?'cursor:pointer;':''}${c.click&&showCompleted?'background:#f0faf5;':''}" ${c.click?`onclick="${c.click}"`:''}}>
+  const cardHtml=cards.map(c=>{
+    const style=`min-width:78px;border-left:3px solid ${c.col};${c.click?'cursor:pointer;':''}${c.label==='完了'&&showCompleted?'background:#f0faf5;':''}`;
+    const onclick=c.click?`onclick="${c.click}"`:'';
+    const arrow=c.click?` ${showCompleted?'▲':'▼'}`:'';
+    return`<div class="card" style="${style}" ${onclick}>
       <div style="font-size:22px;font-weight:700;color:${c.col}">${c.val}</div>
-      <div style="font-size:10px;color:#888;margin-top:2px">${c.label}${c.click?` ${showCompleted?'▲':'▼'}`:''}</div>
-    </div>`).join("")}
-  </div>${completedList}`;
+      <div style="font-size:10px;color:#888;margin-top:2px">${c.label}${arrow}</div>
+    </div>`;
+  }).join("");
+  return`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${showCompleted?'8px':'14px'}">${cardHtml}</div>${completedList}`;
 }
 
 function renderCompletedList(){
